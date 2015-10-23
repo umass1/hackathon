@@ -1,2 +1,8 @@
-# hackathon
-Code for HackUmass III
+# HackUmass III
+
+## Contributors
+
+* Matt Gramigna
+* John Fouad
+* George Bayides
+* Vanessa Demaral
