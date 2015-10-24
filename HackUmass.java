@@ -1,9 +1,27 @@
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Ellipse2D.Double;
 import java.io.IOException;
 import java.lang.Math;
+
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+
 import com.leapmotion.leap.*;
 import com.leapmotion.leap.Gesture.State;
 
 class SampleListener extends Listener {
+	private JFrame jframe;
+	private int paintX;
+	private int paintY;
     public void onInit(Controller controller) {
         System.out.println("Initialized");
     }
@@ -11,9 +29,21 @@ class SampleListener extends Listener {
     public void onConnect(Controller controller) {
         System.out.println("Connected");
         controller.enableGesture(Gesture.Type.TYPE_SWIPE);
-        controller.enableGesture(Gesture.Type.TYPE_CIRCLE);
-        controller.enableGesture(Gesture.Type.TYPE_SCREEN_TAP);
-        controller.enableGesture(Gesture.Type.TYPE_KEY_TAP);
+        paintX = 0;
+        paintY = 0;
+        
+        jframe = new JFrame() {
+        	public void paint(Graphics g) {
+        		g.drawOval(paintX, paintY, 10, 10);
+        	}
+        };
+        jframe.setSize(1500, 1000);
+		jframe.setLayout(new BorderLayout());
+		jframe.add(new JPanel());
+		jframe.setVisible(true);
+//        controller.enableGesture(Gesture.Type.TYPE_CIRCLE);
+//        controller.enableGesture(Gesture.Type.TYPE_SCREEN_TAP);
+//        controller.enableGesture(Gesture.Type.TYPE_KEY_TAP);
     }
 
     public void onDisconnect(Controller controller) {
@@ -26,11 +56,32 @@ class SampleListener extends Listener {
     }
 
     public void onFrame(Controller controller) {
-        // Get the most recent frame and report some basic information
-        Frame frame = controller.frame();
-        for(Hand h : frame.hands()) {
-        	System.out.println(h.palmPosition().getY());
-        }
+//        Frame frame = controller.frame();
+//        for(Hand h : frame.hands()) {
+//        	int count = 0;
+//        	double palmPosition = (h.palmPosition().getY()-65)*.80;
+//        	if(palmPosition >= 0.0 ) {
+////        		System.out.println((int)palmPosition);
+//        	}
+//        	if(frame.gestures().count() != 0) {
+//        		System.out.println(frame.gestures().get(0).type().toString());
+//        		switch(frame.gestures().get(0).type().toString()) {
+//        			case "TYPE_SWIPE":
+//        				count++;
+//        				if(count == 1) {
+//            				System.out.println("Swipe: Switch Color");
+//        				}
+//        		}
+//        	}
+//        }
+    	Frame frame = controller.frame();
+    	for(Hand h : frame.hands()) {
+    		final Vector v = h.palmPosition();
+    		System.out.println("(" + v.getX() + ", " + v.getY() + ")");
+    		paintX = (int)(v.getX()+500);
+    		paintY = (int)(v.getY());
+    		jframe.repaint();
+    	}
     }
 }
 
