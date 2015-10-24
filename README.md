@@ -3,6 +3,6 @@
 ## Contributors
 
 * Matt Gramigna
-* John Fouad
+* John Fouad III
 * George Bayides
 * Vanessa Demaral
