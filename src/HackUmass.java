@@ -24,6 +24,7 @@ class SampleListener extends Listener {
 	private int paintY;
 	private int radius;
 	private Color color;
+	private boolean drawing;
 
 	public void onInit(Controller controller) {
 		System.out.println("Initialized");
@@ -36,11 +37,15 @@ class SampleListener extends Listener {
 		paintY = 0;
 		radius = 25;
 		color = Color.BLACK;
+		drawing = false;
 
 		jframe = new JFrame() {
 			public void paint(Graphics g) {
-				g.setColor(color);
-				g.fillOval(paintX, paintY, radius, radius);
+				if (drawing) {
+					System.out.println("Test");
+					g.setColor(color);
+					g.fillOval(paintX, paintY, radius, radius);
+				}
 			}
 		};
 		jframe.setSize(1500, 1000);
@@ -48,7 +53,7 @@ class SampleListener extends Listener {
 		jframe.add(new JPanel());
 		jframe.setVisible(true);
 		// controller.enableGesture(Gesture.Type.TYPE_CIRCLE);
-		// controller.enableGesture(Gesture.Type.TYPE_SCREEN_TAP);
+		controller.enableGesture(Gesture.Type.TYPE_SCREEN_TAP);
 		// controller.enableGesture(Gesture.Type.TYPE_KEY_TAP);
 	}
 
@@ -62,39 +67,36 @@ class SampleListener extends Listener {
 	}
 
 	public void onFrame(Controller controller) {
-		// Frame frame = controller.frame();
-		// for(Hand h : frame.hands()) {
-		// int count = 0;
-		// double palmPosition = (h.palmPosition().getY()-65)*.80;
-		// if(palmPosition >= 0.0 ) {
-		// // System.out.println((int)palmPosition);
-		// }
-		// if(frame.gestures().count() != 0) {
-		// System.out.println(frame.gestures().get(0).type().toString());
-		// switch(frame.gestures().get(0).type().toString()) {
-		// case "TYPE_SWIPE":
-		// count++;
-		// if(count == 1) {
-		// System.out.println("Swipe: Switch Color");
-		// }
-		// }
-		// }
-		// }
 		Frame frame = controller.frame();
 		for (Hand h : frame.hands()) {
 			final Vector v = h.palmPosition();
 			if (h.grabStrength() != 1.0) {
-				if (h.fingers().frontmost().id() % 10 == 1) {
-					paintX = (int) ((v.getX() * 4) + jframe.getWidth() / 2);
-					paintY = (int) (jframe.getHeight() - (v.getY() * 4));
-					jframe.repaint();
+				if (drawing) {
+					if (h.fingers().frontmost().id() % 10 == 1) {
+						paintX = (int) ((v.getX() * 4) + jframe.getWidth() / 2);
+						paintY = (int) (jframe.getHeight() - (v.getY() * 4));
+						jframe.repaint();
+					}
+					if (h.fingers().frontmost().id() % 10 == 2) {
+						radius = (int) ((v.getY() - 65) * .80);
+						double palmPosition = (h.palmPosition().getY() - 65) * .80;
+						color = new Color((int) palmPosition,
+								(int) (Math.random() * 256),
+								(int) (Math.random() * 256));
+					}
 				}
-				if (h.fingers().frontmost().id() % 10 == 2) {
-					radius = (int) ((v.getY() - 65) * .80);
-					double palmPosition = (h.palmPosition().getY() - 65) * .80;
-					color = new Color((int) palmPosition,
-							(int) (Math.random() * 256),
-							(int) (Math.random() * 256));
+			}
+			if (frame.gestures().count() > 0) {
+				switch (frame.gestures().get(0).type().toString()) {
+				case "TYPE_SWIPE":
+					jframe.setBackground(Color.BLACK);
+					SwingUtilities.updateComponentTreeUI(jframe);
+					break;
+				case "TYPE_SCREEN_TAP":
+					drawing = !drawing;
+					break;
+				default:
+					break;
 				}
 			}
 		}
