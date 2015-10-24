@@ -22,6 +22,8 @@ class SampleListener extends Listener {
 	private JFrame jframe;
 	private int paintX;
 	private int paintY;
+	private int radius;
+	private Color color;
     public void onInit(Controller controller) {
         System.out.println("Initialized");
     }
@@ -31,12 +33,13 @@ class SampleListener extends Listener {
         controller.enableGesture(Gesture.Type.TYPE_SWIPE);
         paintX = 0;
         paintY = 0;
+        radius = 25;
+        color = Color.BLACK;
         
         jframe = new JFrame() {
         	public void paint(Graphics g) {
-        		g.setColor(Color.BLUE);
-        		g.fillOval(paintX, paintY, 25, 25);
-        		
+        		g.setColor(color);
+        		g.fillOval(paintX, paintY, radius, radius);
         	}
         };
         jframe.setSize(1500, 1000);
@@ -79,12 +82,15 @@ class SampleListener extends Listener {
     	Frame frame = controller.frame();
     	for(Hand h : frame.hands()) {
     		final Vector v = h.palmPosition();
-//    		System.out.println(h.fingers().frontmost().id());
-//    		System.out.println("(" + v.getX() + ", " + v.getY() + ")");
     		if(h.fingers().frontmost().id()%10 == 1) {
     			paintX = (int)((v.getX()*4)+jframe.getWidth()/2);
     			paintY = (int)(jframe.getHeight() - (v.getY()*4));
     			jframe.repaint();
+    		}
+    		if(h.fingers().frontmost().id()%10 == 2) {
+    			radius = (int)((v.getY()-65)*.80);
+    			double palmPosition = (h.palmPosition().getY()-65)*.80;
+    			color = new Color((int)palmPosition, (int)(Math.random()*256), (int)(Math.random()*256));
     		}
     	}
     }
