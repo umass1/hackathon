@@ -34,7 +34,9 @@ class SampleListener extends Listener {
         
         jframe = new JFrame() {
         	public void paint(Graphics g) {
-        		g.drawOval(paintX, paintY, 10, 10);
+        		g.setColor(Color.BLUE);
+        		g.fillOval(paintX, paintY, 25, 25);
+        		
         	}
         };
         jframe.setSize(1500, 1000);
@@ -77,10 +79,13 @@ class SampleListener extends Listener {
     	Frame frame = controller.frame();
     	for(Hand h : frame.hands()) {
     		final Vector v = h.palmPosition();
-    		System.out.println("(" + v.getX() + ", " + v.getY() + ")");
-    		paintX = (int)(v.getX()+500);
-    		paintY = (int)(v.getY());
-    		jframe.repaint();
+//    		System.out.println(h.fingers().frontmost().id());
+//    		System.out.println("(" + v.getX() + ", " + v.getY() + ")");
+    		if(h.fingers().frontmost().id()%10 == 1) {
+    			paintX = (int)((v.getX()*4)+jframe.getWidth()/2);
+    			paintY = (int)(jframe.getHeight() - (v.getY()*4));
+    			jframe.repaint();
+    		}
     	}
     }
 }
