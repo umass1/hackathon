@@ -2,17 +2,25 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Panel;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Ellipse2D.Double;
+import java.awt.image.BufferedImage;
+import java.awt.image.ImageObserver;
+import java.awt.image.ImageProducer;
+import java.io.File;
 import java.io.IOException;
 import java.lang.Math;
 
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
@@ -21,6 +29,7 @@ import com.leapmotion.leap.Gesture.State;
 
 class SampleListener extends Listener {
 	private JFrame jframe;
+	private JFrame frame2;
 	private JPanel cursorPanel;
 	private int paintX;
 	private int paintY;
@@ -34,7 +43,7 @@ class SampleListener extends Listener {
 
 	public void onConnect(Controller controller) {
 		System.out.println("Connected");
-//		controller.enableGesture(Gesture.Type.TYPE_SWIPE);
+		// controller.enableGesture(Gesture.Type.TYPE_SWIPE);
 		paintX = 0;
 		paintY = 0;
 		radius = 25;
@@ -56,8 +65,21 @@ class SampleListener extends Listener {
 		// cursorPanel.setVisible(true);
 		jframe.add(new JPanel());
 		jframe.setVisible(true);
-		// controller.enableGesture(Gesture.Type.TYPE_CIRCLE);
-		 controller.enableGesture(Gesture.Type.TYPE_SCREEN_TAP);
+		
+		frame2 = new JFrame() {
+			public void paint(Graphics g) {
+				g.setColor(color);
+				g.drawString("Color", 25, 100);
+				g.setColor(Color.BLACK);
+				g.fillOval(50, 150, radius, radius);
+			}
+		};
+		frame2.setBackground(Color.BLACK);
+		frame2.setSize(100, 1000);
+		frame2.setLayout(new BorderLayout());
+		frame2.setVisible(true);
+		controller.enableGesture(Gesture.Type.TYPE_CIRCLE);
+		controller.enableGesture(Gesture.Type.TYPE_SCREEN_TAP);
 		controller.enableGesture(Gesture.Type.TYPE_KEY_TAP);
 	}
 
@@ -76,28 +98,79 @@ class SampleListener extends Listener {
 			final Vector v = h.palmPosition();
 			if (h.pinchStrength() == 1.0 && h.isRight()) {
 				paintX = (int) ((v.getX() * 4) + jframe.getWidth() / 2);
-				paintY = (int) (jframe.getHeight() - (v.getY() * 4));
+				paintY = (int) (jframe.getHeight() - ((v.getY() * 4) - 50));
 				// cursorPanel.repaint();
-				jframe.repaint();
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						jframe.repaint();
+					}
+				});
 			}
-			if(h.grabStrength() == 1.0) {
-				if(h.isLeft()) {
+			if (h.grabStrength() == 1.0) {
+				if (h.isLeft()) {
 					SwingUtilities.updateComponentTreeUI(jframe);
 				}
 			}
 
 			if (frame.gestures().count() > 0) {
-				switch (frame.gestures().get(0).type().toString()) {
+				String gestureType = frame.gestures().get(0).type().toString();
+				switch (gestureType) {
 				case "TYPE_SCREEN_TAP":
-//					SwingUtilities.updateComponentTreeUI(jframe);
+					// SwingUtilities.updateComponentTreeUI(jframe);
 					break;
 				case "TYPE_KEY_TAP":
-					if(h.isRight()) {
-						radius+=5;
-					} else if(h.isLeft()) {
-						if(radius >= 30) {
-							radius -=5;
+					if (h.isRight()) {
+						radius += 5;
+					} else if (h.isLeft()) {
+						if (radius >= 30) {
+							radius -= 5;
 						}
+					}
+					SwingUtilities.updateComponentTreeUI(frame2);
+					frame2.repaint();
+					break;
+				case "TYPE_CIRCLE":
+					if (h.isLeft()) {
+						controller.config().setFloat(
+								"Gesture.Circle.MinRadius", 50);
+						controller.config().save();
+						CircleGesture circle = new CircleGesture(frame
+								.gestures().get(0));
+						float turns = circle.progress();
+						int red = 0;
+						int green = 0;
+						int blue = 0;
+						if (turns >= 7.0) {
+							turns = 0;
+						}
+						if (turns < 1.0) {
+							red = 255;
+							green = 0;
+							blue = 0;
+							color = new Color(red,
+									(int)((green + turns) * 255), blue);
+						}
+						if (turns >= 1.0 && turns < 2.0) {
+							color = new Color(red
+									- (int) (turns * 127.5), green,
+									blue);
+						}
+						if (turns >= 2.0 && turns < 3.0) {
+							color = new Color(red, green, blue + (int)(turns * 85));
+						}
+						if (turns >= 3.0 && turns < 4.0) {
+							color = new Color(red,
+									(int) (green - (turns * 63.75)), blue);
+						}
+						if (turns >= 4.0 && turns < 5.0) {
+							color = new Color(red + (int)(turns * 51), green, blue);
+						}
+						if (turns >= 6.0 && turns < 7.0) {
+							color = new Color(red, green, blue
+									- (int) (turns * 42.5));
+						}
+						frame2.repaint();
 					}
 					break;
 				default:
