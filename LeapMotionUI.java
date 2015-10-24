@@ -31,9 +31,9 @@ public class LeapMotionUI extends javax.swing.JFrame {
         panel1 = new java.awt.Panel();
         jLabel2 = new javax.swing.JLabel();
         jSlider1 = new javax.swing.JSlider();
-        jPanel1 = new javax.swing.JPanel();
         jSlider2 = new javax.swing.JSlider();
         jSlider3 = new javax.swing.JSlider();
+        jPanel1 = new javax.swing.JPanel();
         jMenuBar2 = new javax.swing.JMenuBar();
         jMenu3 = new javax.swing.JMenu();
         jMenu1 = new javax.swing.JMenu();
@@ -61,7 +61,18 @@ public class LeapMotionUI extends javax.swing.JFrame {
         jSlider1.setForeground(new java.awt.Color(255, 0, 0));
         jSlider1.setOrientation(javax.swing.JSlider.VERTICAL);
         jSlider1.setValue(0);
+        jSlider1.setBorder(javax.swing.BorderFactory.createMatteBorder(3, 3, 3, 3, new java.awt.Color(255, 255, 255)));
         jSlider1.setPreferredSize(new java.awt.Dimension(20, 150));
+
+        jSlider2.setBackground(new java.awt.Color(0, 0, 255));
+        jSlider2.setOrientation(javax.swing.JSlider.VERTICAL);
+        jSlider2.setValue(0);
+        jSlider2.setPreferredSize(new java.awt.Dimension(20, 150));
+
+        jSlider3.setBackground(new java.awt.Color(0, 255, 0));
+        jSlider3.setOrientation(javax.swing.JSlider.VERTICAL);
+        jSlider3.setValue(0);
+        jSlider3.setPreferredSize(new java.awt.Dimension(20, 150));
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -73,16 +84,6 @@ public class LeapMotionUI extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 741, Short.MAX_VALUE)
         );
-
-        jSlider2.setBackground(new java.awt.Color(0, 0, 255));
-        jSlider2.setOrientation(javax.swing.JSlider.VERTICAL);
-        jSlider2.setValue(0);
-        jSlider2.setPreferredSize(new java.awt.Dimension(20, 150));
-
-        jSlider3.setBackground(new java.awt.Color(0, 255, 0));
-        jSlider3.setOrientation(javax.swing.JSlider.VERTICAL);
-        jSlider3.setValue(0);
-        jSlider3.setPreferredSize(new java.awt.Dimension(20, 150));
 
         javax.swing.GroupLayout panel1Layout = new javax.swing.GroupLayout(panel1);
         panel1.setLayout(panel1Layout);
