@@ -28,12 +28,9 @@ class SampleListener extends Listener {
     public void onFrame(Controller controller) {
         // Get the most recent frame and report some basic information
         Frame frame = controller.frame();
-        System.out.println("Frame id: " + frame.id()
-                         + ", timestamp: " + frame.timestamp()
-                         + ", hands: " + frame.hands().count()
-                         + ", fingers: " + frame.fingers().count()
-                         + ", tools: " + frame.tools().count()
-                         + ", gestures " + frame.gestures().count());
+        for(Hand h : frame.hands()) {
+        	System.out.println(h.palmPosition().getY());
+        }
     }
 }
 
