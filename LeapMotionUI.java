@@ -54,7 +54,7 @@ public class LeapMotionUI extends javax.swing.JFrame {
         panel1.setName(""); // NOI18N
         panel1.setPreferredSize(new java.awt.Dimension(1500, 1000));
 
-        jLabel2.setIcon(new javax.swing.ImageIcon("C:\\Users\\John Fouad\\Desktop\\1916561.jpg")); // NOI18N
+        jLabel2.setIcon(new javax.swing.ImageIcon("1916561.jpg")); // NOI18N
         jLabel2.setPreferredSize(new java.awt.Dimension(1500, 1000));
 
         jSlider1.setBackground(new java.awt.Color(255, 0, 0));
