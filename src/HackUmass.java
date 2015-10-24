@@ -2,6 +2,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Panel;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
@@ -20,6 +21,7 @@ import com.leapmotion.leap.Gesture.State;
 
 class SampleListener extends Listener {
 	private JFrame jframe;
+	private JPanel cursorPanel;
 	private int paintX;
 	private int paintY;
 	private int radius;
@@ -32,17 +34,16 @@ class SampleListener extends Listener {
 
 	public void onConnect(Controller controller) {
 		System.out.println("Connected");
-		controller.enableGesture(Gesture.Type.TYPE_SWIPE);
+//		controller.enableGesture(Gesture.Type.TYPE_SWIPE);
 		paintX = 0;
 		paintY = 0;
 		radius = 25;
 		color = Color.BLACK;
-		drawing = false;
+		drawing = true;
 
 		jframe = new JFrame() {
 			public void paint(Graphics g) {
 				if (drawing) {
-					System.out.println("Test");
 					g.setColor(color);
 					g.fillOval(paintX, paintY, radius, radius);
 				}
@@ -50,11 +51,14 @@ class SampleListener extends Listener {
 		};
 		jframe.setSize(1500, 1000);
 		jframe.setLayout(new BorderLayout());
+		// cursorPanel = new JPanel();
+		// cursorPanel.setOpaque(false);
+		// cursorPanel.setVisible(true);
 		jframe.add(new JPanel());
 		jframe.setVisible(true);
 		// controller.enableGesture(Gesture.Type.TYPE_CIRCLE);
-		controller.enableGesture(Gesture.Type.TYPE_SCREEN_TAP);
-		// controller.enableGesture(Gesture.Type.TYPE_KEY_TAP);
+		 controller.enableGesture(Gesture.Type.TYPE_SCREEN_TAP);
+		controller.enableGesture(Gesture.Type.TYPE_KEY_TAP);
 	}
 
 	public void onDisconnect(Controller controller) {
@@ -70,30 +74,31 @@ class SampleListener extends Listener {
 		Frame frame = controller.frame();
 		for (Hand h : frame.hands()) {
 			final Vector v = h.palmPosition();
-			if (h.grabStrength() != 1.0) {
-				if (drawing) {
-					if (h.fingers().frontmost().id() % 10 == 1) {
-						paintX = (int) ((v.getX() * 4) + jframe.getWidth() / 2);
-						paintY = (int) (jframe.getHeight() - (v.getY() * 4));
-						jframe.repaint();
-					}
-					if (h.fingers().frontmost().id() % 10 == 2) {
-						radius = (int) ((v.getY() - 65) * .80);
-						double palmPosition = (h.palmPosition().getY() - 65) * .80;
-						color = new Color((int) palmPosition,
-								(int) (Math.random() * 256),
-								(int) (Math.random() * 256));
-					}
+			if (h.pinchStrength() == 1.0 && h.isRight()) {
+				paintX = (int) ((v.getX() * 4) + jframe.getWidth() / 2);
+				paintY = (int) (jframe.getHeight() - (v.getY() * 4));
+				// cursorPanel.repaint();
+				jframe.repaint();
+			}
+			if(h.grabStrength() == 1.0) {
+				if(h.isLeft()) {
+					SwingUtilities.updateComponentTreeUI(jframe);
 				}
 			}
+
 			if (frame.gestures().count() > 0) {
 				switch (frame.gestures().get(0).type().toString()) {
-				case "TYPE_SWIPE":
-					jframe.setBackground(Color.BLACK);
-					SwingUtilities.updateComponentTreeUI(jframe);
-					break;
 				case "TYPE_SCREEN_TAP":
-					drawing = !drawing;
+//					SwingUtilities.updateComponentTreeUI(jframe);
+					break;
+				case "TYPE_KEY_TAP":
+					if(h.isRight()) {
+						radius+=5;
+					} else if(h.isLeft()) {
+						if(radius >= 30) {
+							radius -=5;
+						}
+					}
 					break;
 				default:
 					break;
