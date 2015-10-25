@@ -39,16 +39,16 @@ import com.leapmotion.leap.*;
 import com.leapmotion.leap.Gesture.State;
 
 import org.opencv.*;
+
 class HackUmass extends Listener {
-	private JFrame jframe;
-	private JFrame frame2;
+	private JFrame drawingFrame;
+	private JFrame cursorFrame;
 	private int paintX;
 	private int paintY;
 	private int radius;
 	private Color color;
 	private boolean drawing;
 	private String handedness;
-	private boolean shouldFill;
 
 	public void onInit(Controller controller) {
 		System.out.println("Initialized");
@@ -56,69 +56,63 @@ class HackUmass extends Listener {
 
 	public void onConnect(Controller controller) {
 		System.out.println("Connected");
-//		 controller.enableGesture(Gesture.Type.TYPE_SWIPE);
 		paintX = 0;
 		paintY = 0;
 		radius = 25;
 		color = Color.BLACK;
 		drawing = true;
-		shouldFill = true;
 
+		// Prompt for handedness
 		String[] options = { "Left", "Right" };
 		int result = JOptionPane.showOptionDialog(null,
 				"Choose your dominant hand", "Handedness",
 				JOptionPane.DEFAULT_OPTION, JOptionPane.DEFAULT_OPTION, null,
 				options, options[1]);
 		handedness = result == 1 ? "right" : "left";
+
+		// Prompt for frame name
 		String drawingName = JOptionPane
 				.showInputDialog("Enter Drawing Name: ");
 
-		jframe = new JFrame(drawingName) {
+		drawingFrame = new JFrame(drawingName) {
 			public void paint(Graphics g) {
 				if (drawing) {
 					g.setColor(color);
-					if (!shouldFill) {
-						g.drawOval(paintX, paintY, radius, radius);
-					} else {
-						g.fillOval(paintX, paintY, radius, radius);
-					}
+					g.fillOval(paintX, paintY, radius, radius);
 				}
 			}
 		};
-		jframe.setBounds(0, 100, 1350, 850);
-		jframe.setLayout(new BorderLayout());
-		jframe.setBackground(new Color(130,134,135));
+		drawingFrame.setBounds(0, 100, 1350, 850);
+		drawingFrame.setLayout(new BorderLayout());
+		drawingFrame.setBackground(new Color(130, 134, 135));
 		JPanel panel = new JPanel() {
 			public void paintComponent(Graphics g) {
 				g.setColor(Color.BLUE);
-				g.fillRect(100, 100,100,100);
+				g.fillRect(100, 100, 100, 100);
 			}
 		};
 		panel.setVisible(true);
-		jframe.add(panel);
-		// jframe.setAlwaysOnTop(true);
-		//jframe.setVisible(true);
+		drawingFrame.add(panel);
 
-		frame2 = new JFrame("Size/Color") {
+		cursorFrame = new JFrame("Size/Color") {
 			public void paint(Graphics g) {
 				g.setColor(color);
 				g.fillOval((this.getWidth() / 2) - (radius / 2),
 						(this.getHeight() / 2) - 25, radius, radius);
 			}
 		};
-		frame2.setBounds(1350, 100, 200, 200);
-		frame2.setLayout(new BorderLayout());
-//		frame2.setAlwaysOnTop(true);
-//		frame2.setVisible(true);
-		controller.enableGesture(Gesture.Type.TYPE_CIRCLE);
-		// controller.enableGesture(Gesture.Type.TYPE_SCREEN_TAP);
-		controller.enableGesture(Gesture.Type.TYPE_KEY_TAP);
+		cursorFrame.setBounds(1350, 100, 200, 200);
+		cursorFrame.setLayout(new BorderLayout());
 		
+		// Add Gestures to controller
+		controller.enableGesture(Gesture.Type.TYPE_CIRCLE);
+		controller.enableGesture(Gesture.Type.TYPE_KEY_TAP);
+
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				jframe.setVisible(true);
-				frame2.setVisible(true);
+				drawingFrame.setVisible(true);
+				cursorFrame.setVisible(true);
 			}
 		});
 	}
@@ -136,49 +130,60 @@ class HackUmass extends Listener {
 		Frame frame = controller.frame();
 		for (Hand h : frame.hands()) {
 			final Vector v = h.palmPosition();
+			
+			// Draw if the user is pinching with their dominant hand
 			if (h.pinchStrength() == 1.0
 					&& (handedness.equals("left") ? h.isLeft() : h.isRight())) {
-				paintX = (int) ((v.getX() * 4) + jframe.getWidth() / 2);
-				paintY = (int) (jframe.getHeight() - ((v.getY() * 4) - 50));
+				paintX = (int) ((v.getX() * 4) + drawingFrame.getWidth() / 2);
+				paintY = (int) (drawingFrame.getHeight() - ((v.getY() * 4) - 50));
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
-						jframe.repaint();
+						drawingFrame.repaint();
 					}
 				});
 			}
+			
+			// Clear if a fist with non-dominant hand
 			if (h.grabStrength() == 1.0) {
 				if (handedness.equals("right") ? h.isLeft() : h.isRight()) {
-					SwingUtilities.updateComponentTreeUI(jframe);
-					jframe.getContentPane().setBackground(Color.WHITE);
+					SwingUtilities.updateComponentTreeUI(drawingFrame);
+					drawingFrame.getContentPane().setBackground(Color.WHITE);
 				}
 			}
 
+			// If the frame detects a gesture
 			if (frame.gestures().count() > 0) {
 				String gestureType = frame.gestures().get(0).type().toString();
 				switch (gestureType) {
 				case "TYPE_KEY_TAP":
+					
+					//Prevents thread exception
 					Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-						
+
 						@Override
 						public void uncaughtException(Thread t, Throwable e) {
 							// TODO Auto-generated method stub
-							
+
 						}
 					});
+					
+					// Change the radius
 					if (h.isRight()) {
 						if (radius <= 90) {
 							radius += 5;
-							SwingUtilities.updateComponentTreeUI(frame2);
+							SwingUtilities.updateComponentTreeUI(cursorFrame);
 						}
 					} else if (h.isLeft()) {
 						if (radius >= 30) {
 							radius -= 5;
-							SwingUtilities.updateComponentTreeUI(frame2);
+							SwingUtilities.updateComponentTreeUI(cursorFrame);
 						}
 					}
 					break;
 				case "TYPE_CIRCLE":
+					
+					// Changes color based on extent of circle motion with non-dominant hand
 					if (handedness.equals("right") ? h.isLeft() : h.isRight()) {
 						controller.config().setFloat(
 								"Gesture.Circle.MinRadius", 25);
@@ -234,7 +239,7 @@ class HackUmass extends Listener {
 							color = new Color(red, green, blue
 									- (int) (turns * 42.5));
 						}
-						frame2.repaint();
+						cursorFrame.repaint();
 					}
 					break;
 				default:
@@ -245,14 +250,21 @@ class HackUmass extends Listener {
 	}
 
 	public void loadFile(File file) throws Exception {
-		jframe.toFront();
-		frame2.toFront();
-		jframe.setContentPane(new JLabel(new ImageIcon(ImageIO.read(file))));
-		jframe.repaint();
-		frame2.repaint();
+		drawingFrame.toFront();
+		cursorFrame.toFront();
+		drawingFrame.setContentPane(new JLabel(
+				new ImageIcon(ImageIO.read(file))));
+		drawingFrame.repaint();
+		cursorFrame.repaint();
 	}
 }
 
+/**
+ * Netbeans Generated
+ * 
+ * @author Matt
+ *
+ */
 class MenuFrame extends javax.swing.JFrame {
 
 	/**
@@ -345,7 +357,7 @@ class MenuFrame extends javax.swing.JFrame {
 		Image.add(loadImageMenuItem);
 		takePictureMenuItem.setText("Take Picture");
 		takePictureMenuItem.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
@@ -393,9 +405,9 @@ class MenuFrame extends javax.swing.JFrame {
 			}
 		}
 	}
-	
+
 	private void takePicture(ActionEvent e) {
-	    
+
 	}
 
 	public static void main(String args[]) {
