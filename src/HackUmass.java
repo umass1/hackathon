@@ -11,6 +11,8 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Ellipse2D.Double;
 import java.awt.image.BufferedImage;
@@ -44,6 +46,7 @@ class HackUmass extends Listener {
 	private int radius;
 	private Color color;
 	private boolean drawing;
+	private String handedness;
 
 	public void onInit(Controller controller) {
 		System.out.println("Initialized");
@@ -57,7 +60,9 @@ class HackUmass extends Listener {
 		radius = 25;
 		color = Color.BLACK;
 		drawing = true;
-		
+		String[] options = {"Left", "Right"};
+		int result = JOptionPane.showOptionDialog(null, "Choose your dominant hand", "Handedness", JOptionPane.DEFAULT_OPTION, JOptionPane.DEFAULT_OPTION, null, options, options[1]);
+		handedness = result == 1 ? "right" : "left";
 		String drawingName = JOptionPane.showInputDialog("Enter Drawing Name: ");
 
 		jframe = new JFrame(drawingName) {
@@ -68,12 +73,13 @@ class HackUmass extends Listener {
 				}
 			}
 		};
-		jframe.setBounds(0, 70, 1350, 850);
+		jframe.setBounds(0, 100, 1350, 850);
 		jframe.setLayout(new BorderLayout());
 		jframe.setBackground(Color.WHITE);
 		JPanel panel = new JPanel();
 		panel.setVisible(true);
 		jframe.add(panel);
+//		jframe.setAlwaysOnTop(true);
 		jframe.setVisible(true);
 
 		frame2 = new JFrame("Size/Color") {
@@ -83,8 +89,9 @@ class HackUmass extends Listener {
 						(this.getHeight() / 2) - 25, radius, radius);
 			}
 		};
-		frame2.setBounds(1350,70,200, 200);
+		frame2.setBounds(1350,100,200, 200);
 		frame2.setLayout(new BorderLayout());
+		frame2.setAlwaysOnTop(true);
 		frame2.setVisible(true);
 		controller.enableGesture(Gesture.Type.TYPE_CIRCLE);
 		// controller.enableGesture(Gesture.Type.TYPE_SCREEN_TAP);
@@ -104,7 +111,7 @@ class HackUmass extends Listener {
 		Frame frame = controller.frame();
 		for (Hand h : frame.hands()) {
 			final Vector v = h.palmPosition();
-			if (h.pinchStrength() == 1.0 && h.isRight()) {
+			if (h.pinchStrength() == 1.0 && (handedness.equals("left") ? h.isLeft():h.isRight())) {
 				paintX = (int) ((v.getX() * 4) + jframe.getWidth() / 2);
 				paintY = (int) (jframe.getHeight() - ((v.getY() * 4) - 50));
 				SwingUtilities.invokeLater(new Runnable() {
@@ -115,8 +122,7 @@ class HackUmass extends Listener {
 				});
 			}
 			if (h.grabStrength() == 1.0) {
-				if (h.isLeft()) {
-					System.out.println("CLEAR");
+				if (handedness.equals("right") ? h.isLeft():h.isRight()) {
 					SwingUtilities.updateComponentTreeUI(jframe);
 					jframe.getContentPane().setBackground(Color.WHITE);
 				}
@@ -130,7 +136,7 @@ class HackUmass extends Listener {
 						if (radius <= 90) {
 							radius += 5;
 						}
-					} else if (h.isLeft()) {
+					} else if (handedness.equals("right") ? h.isLeft():h.isRight()) {
 						if (radius >= 30) {
 							radius -= 5;
 						}
@@ -142,7 +148,7 @@ class HackUmass extends Listener {
 
 					break;
 				case "TYPE_CIRCLE":
-					if (h.isLeft()) {
+					if (handedness.equals("right") ? h.isLeft():h.isRight()) {
 						controller.config().setFloat(
 								"Gesture.Circle.MinRadius", 25);
 						controller.config().save();
@@ -206,6 +212,11 @@ class HackUmass extends Listener {
 			}
 		}
 	}
+	public void loadFile(File file) throws Exception {
+		jframe.toFront();
+		jframe.setContentPane(new JLabel(new ImageIcon(ImageIO.read(file))));
+		jframe.repaint();
+	}
 }
 
 class MenuFrame extends javax.swing.JFrame {
@@ -255,7 +266,7 @@ class MenuFrame extends javax.swing.JFrame {
 
 		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 		setTitle("Get The Hands");
-
+		
 		panel.setBackground(new java.awt.Color(255, 255, 255));
 
 		javax.swing.GroupLayout panelLayout = new javax.swing.GroupLayout(panel);
@@ -277,15 +288,26 @@ class MenuFrame extends javax.swing.JFrame {
 					}
 				});
 		fileMenu.add(newDrawingMenuItem);
-
 		jMenuBar1.add(fileMenu);
 
 		Image.setText("Image");
 		Image.setActionCommand("Image");
 
 		loadImageMenuItem.setText("Load Image");
+		loadImageMenuItem.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				// TODO Auto-generated method stub
+				try {
+					loadImage(evt);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		});
 		Image.add(loadImageMenuItem);
-
 		takePictureMenuItem.setText("Take Picture");
 		Image.add(takePictureMenuItem);
 
@@ -313,6 +335,18 @@ class MenuFrame extends javax.swing.JFrame {
 		windowOpen = true;
 		controller.removeListener(listener);
 		controller.addListener(listener);
+	}
+	
+	private void loadImage(ActionEvent evt) throws Exception {
+		if(!windowOpen) {
+			JOptionPane.showMessageDialog(this, "Must have a drawing open first", "Error", JOptionPane.ERROR_MESSAGE);
+		} else {
+			JFileChooser fChooser = new JFileChooser();
+			int val = fChooser.showDialog(this, "Load Image");
+			if(val == JFileChooser.APPROVE_OPTION) {
+				listener.loadFile(fChooser.getSelectedFile());
+			}
+		}
 	}
 
 	public static void main(String args[]) {
