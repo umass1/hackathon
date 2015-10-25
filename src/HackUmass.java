@@ -1,5 +1,6 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GradientPaint;
@@ -19,6 +20,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.awt.image.ImageProducer;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.Math;
 
@@ -30,6 +32,8 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -85,12 +89,7 @@ class HackUmass extends Listener {
 		drawingFrame.setBounds(0, 100, 1350, 850);
 		drawingFrame.setLayout(new BorderLayout());
 		drawingFrame.setBackground(new Color(130, 134, 135));
-		JPanel panel = new JPanel() {
-			public void paintComponent(Graphics g) {
-				g.setColor(Color.BLUE);
-				g.fillRect(100, 100, 100, 100);
-			}
-		};
+		JPanel panel = new JPanel();
 		panel.setVisible(true);
 		drawingFrame.add(panel);
 
@@ -302,6 +301,8 @@ class MenuFrame extends javax.swing.JFrame {
 			}
 		};
 		jMenuBar1 = new javax.swing.JMenuBar();
+		Help = new JMenu();
+		helpMenuItem = new JMenuItem();
 		fileMenu = new javax.swing.JMenu();
 		newDrawingMenuItem = new javax.swing.JMenuItem();
 		Image = new javax.swing.JMenu();
@@ -367,7 +368,26 @@ class MenuFrame extends javax.swing.JFrame {
 		Image.add(takePictureMenuItem);
 
 		jMenuBar1.add(Image);
-
+		
+		Help.setText("Help");
+		Help.setActionCommand("Help");
+		
+		helpMenuItem.setText("Show Help");
+		helpMenuItem.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				try {
+					Desktop d = Desktop.getDesktop();
+					d.open(new File("helpdoc.docx"));
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+		});
+		Help.add(helpMenuItem);
+		jMenuBar1.add(Help);
 		setJMenuBar(jMenuBar1);
 
 		javax.swing.GroupLayout layout = new javax.swing.GroupLayout(
@@ -445,6 +465,8 @@ class MenuFrame extends javax.swing.JFrame {
 	// Variables declaration - do not modify//GEN-BEGIN:variables
 	private javax.swing.JMenu Image;
 	private javax.swing.JMenu fileMenu;
+	private JMenu Help;
+	private JMenuItem helpMenuItem;
 	private javax.swing.JMenuBar jMenuBar1;
 	private javax.swing.JMenuItem newDrawingMenuItem;
 	private javax.swing.JMenuItem loadImageMenuItem;
