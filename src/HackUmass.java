@@ -2,11 +2,13 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Panel;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Ellipse2D;
@@ -26,6 +28,7 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -54,8 +57,10 @@ class HackUmass extends Listener {
 		radius = 25;
 		color = Color.BLACK;
 		drawing = true;
+		
+		String drawingName = JOptionPane.showInputDialog("Enter Drawing Name: ");
 
-		jframe = new JFrame("New Drawing") {
+		jframe = new JFrame(drawingName) {
 			public void paint(Graphics g) {
 				if (drawing) {
 					g.setColor(color);
@@ -65,6 +70,7 @@ class HackUmass extends Listener {
 		};
 		jframe.setBounds(0, 70, 1350, 850);
 		jframe.setLayout(new BorderLayout());
+		jframe.setBackground(Color.WHITE);
 		JPanel panel = new JPanel();
 		panel.setVisible(true);
 		jframe.add(panel);
@@ -110,8 +116,9 @@ class HackUmass extends Listener {
 			}
 			if (h.grabStrength() == 1.0) {
 				if (h.isLeft()) {
-					jframe.setBackground(Color.WHITE);
+					System.out.println("CLEAR");
 					SwingUtilities.updateComponentTreeUI(jframe);
+					jframe.getContentPane().setBackground(Color.WHITE);
 				}
 			}
 
@@ -221,7 +228,21 @@ class MenuFrame extends javax.swing.JFrame {
 	 */
 	private void initComponents() {
 
-		panel = new javax.swing.JPanel();
+		panel = new javax.swing.JPanel() {
+			@Override
+		    protected void paintComponent(Graphics g) {
+		        super.paintComponent(g);
+		        Graphics2D g2d = (Graphics2D) g;
+		        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+		        int w = getWidth();
+		        int h = getHeight();
+		        Color color1 = new Color(102,204,255);
+		        Color color2 = new Color(178,178,204);
+		        GradientPaint gp = new GradientPaint(0, 0, color1, 0, h, color2);
+		        g2d.setPaint(gp);
+		        g2d.fillRect(0, 0, w, h);
+		    }
+		};
 		jMenuBar1 = new javax.swing.JMenuBar();
 		fileMenu = new javax.swing.JMenu();
 		newDrawingMenuItem = new javax.swing.JMenuItem();
@@ -230,6 +251,7 @@ class MenuFrame extends javax.swing.JFrame {
 		takePictureMenuItem = new javax.swing.JMenuItem();
 		controller = new Controller();
 		listener = new HackUmass();
+		windowOpen = false;
 
 		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 		setTitle("Get The Hands");
@@ -288,6 +310,8 @@ class MenuFrame extends javax.swing.JFrame {
 
 	private void newDrawing(java.awt.event.ActionEvent evt) {
 		// Create a sample listener and controller
+		windowOpen = true;
+		controller.removeListener(listener);
 		controller.addListener(listener);
 	}
 
@@ -333,5 +357,6 @@ class MenuFrame extends javax.swing.JFrame {
 	private javax.swing.JMenuItem takePictureMenuItem;
 	private Controller controller;
 	private HackUmass listener;
+	private boolean windowOpen;
 	// End of variables declaration//GEN-END:variables
 }
