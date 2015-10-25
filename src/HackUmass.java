@@ -6,6 +6,7 @@ import java.awt.Image;
 import java.awt.Panel;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.event.ActionEvent;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Ellipse2D.Double;
 import java.awt.image.BufferedImage;
@@ -16,9 +17,11 @@ import java.io.IOException;
 import java.lang.Math;
 
 import javax.imageio.ImageIO;
+import javax.print.attribute.standard.Sides;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -27,10 +30,9 @@ import javax.swing.SwingUtilities;
 import com.leapmotion.leap.*;
 import com.leapmotion.leap.Gesture.State;
 
-class SampleListener extends Listener {
+class HackUmass extends Listener {
 	private JFrame jframe;
 	private JFrame frame2;
-	private JPanel cursorPanel;
 	private int paintX;
 	private int paintY;
 	private int radius;
@@ -60,26 +62,23 @@ class SampleListener extends Listener {
 		};
 		jframe.setSize(1500, 1000);
 		jframe.setLayout(new BorderLayout());
-		// cursorPanel = new JPanel();
-		// cursorPanel.setOpaque(false);
-		// cursorPanel.setVisible(true);
-		jframe.add(new JPanel());
+		JPanel panel = new JPanel();
+		panel.setVisible(true);
+		jframe.add(panel);
 		jframe.setVisible(true);
-		
+
 		frame2 = new JFrame() {
 			public void paint(Graphics g) {
 				g.setColor(color);
-				g.drawString("Color", 25, 100);
-				g.setColor(Color.BLACK);
-				g.fillOval(50, 150, radius, radius);
+				g.fillOval((this.getWidth() / 2) - (radius / 2),
+						(this.getHeight() / 2)-25, radius, radius);
 			}
 		};
-		frame2.setBackground(Color.BLACK);
-		frame2.setSize(100, 1000);
+		frame2.setSize(200, 200);
 		frame2.setLayout(new BorderLayout());
 		frame2.setVisible(true);
 		controller.enableGesture(Gesture.Type.TYPE_CIRCLE);
-		controller.enableGesture(Gesture.Type.TYPE_SCREEN_TAP);
+		// controller.enableGesture(Gesture.Type.TYPE_SCREEN_TAP);
 		controller.enableGesture(Gesture.Type.TYPE_KEY_TAP);
 	}
 
@@ -110,30 +109,32 @@ class SampleListener extends Listener {
 			if (h.grabStrength() == 1.0) {
 				if (h.isLeft()) {
 					SwingUtilities.updateComponentTreeUI(jframe);
+					jframe.setBackground(Color.WHITE);
 				}
 			}
 
 			if (frame.gestures().count() > 0) {
 				String gestureType = frame.gestures().get(0).type().toString();
 				switch (gestureType) {
-				case "TYPE_SCREEN_TAP":
-					// SwingUtilities.updateComponentTreeUI(jframe);
-					break;
 				case "TYPE_KEY_TAP":
 					if (h.isRight()) {
-						radius += 5;
+						if (radius <= 90) {
+							radius += 5;
+						}
 					} else if (h.isLeft()) {
 						if (radius >= 30) {
 							radius -= 5;
 						}
 					}
 					SwingUtilities.updateComponentTreeUI(frame2);
-					frame2.repaint();
+					frame2.setBackground(Color.WHITE);
+					// frame2.repaint();
+
 					break;
 				case "TYPE_CIRCLE":
 					if (h.isLeft()) {
 						controller.config().setFloat(
-								"Gesture.Circle.MinRadius", 50);
+								"Gesture.Circle.MinRadius", 25);
 						controller.config().save();
 						CircleGesture circle = new CircleGesture(frame
 								.gestures().get(0));
@@ -149,24 +150,40 @@ class SampleListener extends Listener {
 							green = 0;
 							blue = 0;
 							color = new Color(red,
-									(int)((green + turns) * 255), blue);
+									(int) ((green + turns) * 255), blue);
 						}
 						if (turns >= 1.0 && turns < 2.0) {
-							color = new Color(red
-									- (int) (turns * 127.5), green,
-									blue);
+							red = 255;
+							green = 255;
+							blue = 0;
+							color = new Color(red - (int) (turns * 127.5),
+									green, blue);
 						}
 						if (turns >= 2.0 && turns < 3.0) {
-							color = new Color(red, green, blue + (int)(turns * 85));
+							red = 0;
+							green = 255;
+							blue = 0;
+							color = new Color(red, green, blue
+									+ (int) (turns * 85));
 						}
 						if (turns >= 3.0 && turns < 4.0) {
+							red = 0;
+							green = 255;
+							blue = 0;
 							color = new Color(red,
 									(int) (green - (turns * 63.75)), blue);
 						}
 						if (turns >= 4.0 && turns < 5.0) {
-							color = new Color(red + (int)(turns * 51), green, blue);
+							red = 0;
+							green = 0;
+							blue = 255;
+							color = new Color(red + (int) (turns * 51), green,
+									blue);
 						}
 						if (turns >= 6.0 && turns < 7.0) {
+							red = 255;
+							green = 0;
+							blue = 255;
 							color = new Color(red, green, blue
 									- (int) (turns * 42.5));
 						}
@@ -179,12 +196,9 @@ class SampleListener extends Listener {
 			}
 		}
 	}
-}
-
-class HackUmass {
 	public static void main(String[] args) {
 		// Create a sample listener and controller
-		SampleListener listener = new SampleListener();
+		HackUmass listener = new HackUmass();
 		Controller controller = new Controller();
 
 		// Have the sample listener receive events from the controller
