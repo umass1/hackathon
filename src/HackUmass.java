@@ -1,6 +1,7 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.EventQueue;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -27,6 +28,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 import com.leapmotion.leap.*;
 import com.leapmotion.leap.Gesture.State;
@@ -61,7 +63,7 @@ class HackUmass extends Listener {
 				}
 			}
 		};
-		jframe.setBounds(0, 60, 1000, 500);
+		jframe.setBounds(0, 70, 1350, 850);
 		jframe.setLayout(new BorderLayout());
 		JPanel panel = new JPanel();
 		panel.setVisible(true);
@@ -75,7 +77,7 @@ class HackUmass extends Listener {
 						(this.getHeight() / 2) - 25, radius, radius);
 			}
 		};
-		frame2.setBounds(1010,60,200, 200);
+		frame2.setBounds(1350,70,200, 200);
 		frame2.setLayout(new BorderLayout());
 		frame2.setVisible(true);
 		controller.enableGesture(Gesture.Type.TYPE_CIRCLE);
@@ -108,8 +110,8 @@ class HackUmass extends Listener {
 			}
 			if (h.grabStrength() == 1.0) {
 				if (h.isLeft()) {
-					SwingUtilities.updateComponentTreeUI(jframe);
 					jframe.setBackground(Color.WHITE);
+					SwingUtilities.updateComponentTreeUI(jframe);
 				}
 			}
 
@@ -206,6 +208,9 @@ class MenuFrame extends javax.swing.JFrame {
 	 */
 	public MenuFrame() {
 		this.setExtendedState(JFrame.MAXIMIZED_BOTH);
+		Font f = new Font("sans-serif", Font.PLAIN, 20);
+		UIManager.put("Menu.font", f);
+		UIManager.put("MenuItem.font", f);
 		initComponents();
 	}
 
