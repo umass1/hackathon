@@ -69,7 +69,7 @@ class HackUmass extends Listener {
 		// Prompt for handedness
 		String[] options = { "Left", "Right" };
 		int result = JOptionPane.showOptionDialog(null,
-				"Choose your dominant hand", "Handedness",
+				"Which hand will you draw with?", "Handedness",
 				JOptionPane.DEFAULT_OPTION, JOptionPane.DEFAULT_OPTION, null,
 				options, options[1]);
 		handedness = result == 1 ? "right" : "left";
@@ -90,6 +90,7 @@ class HackUmass extends Listener {
 		drawingFrame.setLayout(new BorderLayout());
 		drawingFrame.setBackground(new Color(130, 134, 135));
 		JPanel panel = new JPanel();
+		panel.setBackground(Color.WHITE);
 		panel.setVisible(true);
 		drawingFrame.add(panel);
 
@@ -102,6 +103,10 @@ class HackUmass extends Listener {
 		};
 		cursorFrame.setBounds(1350, 100, 200, 200);
 		cursorFrame.setLayout(new BorderLayout());
+		JPanel cursorPanel = new JPanel();
+		cursorPanel.setBackground(Color.WHITE);
+		panel.setVisible(true);
+		cursorFrame.add(cursorPanel);
 		
 		// Add Gestures to controller
 		controller.enableGesture(Gesture.Type.TYPE_CIRCLE);
@@ -130,7 +135,7 @@ class HackUmass extends Listener {
 		for (Hand h : frame.hands()) {
 			final Vector v = h.palmPosition();
 			
-			// Draw if the user is pinching with their dominant hand
+			// Draw if the user is pinching with their drawing hand
 			if (h.pinchStrength() == 1.0
 					&& (handedness.equals("left") ? h.isLeft() : h.isRight())) {
 				paintX = (int) ((v.getX() * 4) + drawingFrame.getWidth() / 2);
@@ -143,11 +148,10 @@ class HackUmass extends Listener {
 				});
 			}
 			
-			// Clear if a fist with non-dominant hand
+			// Clear if a fist with non- hand
 			if (h.grabStrength() == 1.0) {
 				if (handedness.equals("right") ? h.isLeft() : h.isRight()) {
-					SwingUtilities.updateComponentTreeUI(drawingFrame);
-					drawingFrame.getContentPane().setBackground(Color.WHITE);
+					SwingUtilities.updateComponentTreeUI(drawingFrame);					
 				}
 			}
 
@@ -182,7 +186,7 @@ class HackUmass extends Listener {
 					break;
 				case "TYPE_CIRCLE":
 					
-					// Changes color based on extent of circle motion with non-dominant hand
+					// Changes color based on extent of circle motion with non-drawing hand
 					if (handedness.equals("right") ? h.isLeft() : h.isRight()) {
 						controller.config().setFloat(
 								"Gesture.Circle.MinRadius", 25);
